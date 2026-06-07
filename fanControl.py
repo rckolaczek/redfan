@@ -1,3 +1,4 @@
+import sys
 import redfish
 import keyring
 
@@ -24,15 +25,25 @@ REDFISH_OBJ.login(auth="session")
 # response = REDFISH_OBJ.get("/redfish/v1/Systems/1", None)
 
 # get the temp sensors
-response = REDFISH_OBJ.get("/redfish/v1/Chassis/Self/Thermal", None).dict
-temperatures = response.get('Temperatures', [])
+# response = REDFISH_OBJ.get("/redfish/v1/Chassis/Self/Thermal", None).dict
+# temperatures = response.get('Temperatures', [])
+
+# get the fan profile
+response = REDFISH_OBJ.get("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", None).dict
+fan_profiles = response.get('arrProfile', [])
+
 
 # print the response
+# sys.stdout.write("%s\n" % response)
 # print(response.dict)
 # print(temperatures)
+# print(fan_profiles)
 
-for temp in temperatures:
-    print(f"Sensor Name: {temp['Name']}, Reading: {temp['ReadingCelsius']}°C")
+# for temp in temperatures:
+#     print(f"Sensor Name: {temp['Name']}, Reading: {temp['ReadingCelsius']}°C")
+
+for policy in fan_profiles:
+    print(f"Profile Name: {policy['strName']}")
 
 
 REDFISH_OBJ.logout()
