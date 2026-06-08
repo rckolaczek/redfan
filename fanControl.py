@@ -2,6 +2,7 @@ import sys
 import json
 import redfish
 import keyring
+from gpuControl import *
 
 # authentication
 login_account = 'admin'
@@ -49,6 +50,17 @@ def set_fan_profile(REDFISH_OBJ, profile_file):
         response = REDFISH_OBJ.post("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", body=payload, headers=headers)
     return response
 
+def evaluate_gpu_temperature(gpu_name, sensor_path):
+    gpuTemp = get_sensors(gpu_name).get(sensor_path)
+    if gpuTemp:
+        if gpuTemp >= 65:
+            print('Half')
+        elif gpuTemp >= 85:
+            print('Full')
+    else:
+        print('Auto')
+
+
 
 # main
 REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account, \
@@ -59,9 +71,8 @@ REDFISH_OBJ.login(auth="session")
 new_mode = 'Unraid-Default-GPU'
 dump_fan_profile(REDFISH_OBJ, new_mode)
 set_fan_profile(REDFISH_OBJ, 'fan_profiles.json')
+evaluate_gpu_temperature('xe-pci-0300', 'pkg')
 REDFISH_OBJ.logout()
-
-
 
 # print the response | remove later
 # sys.stdout.write("%s\n" % response)
