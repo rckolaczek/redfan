@@ -67,11 +67,11 @@ REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account
                       password=password, default_prefix='/redfish/v1/')
 REDFISH_OBJ.login(auth="session")
 
-# dump fan profile | update active profile | set new profile
+# dump fan profile | update active profile settings | evaluate GPU | import new profile
 new_mode = 'Unraid-Default-GPU'
 dump_fan_profile(REDFISH_OBJ, new_mode)
-set_fan_profile(REDFISH_OBJ, 'fan_profiles.json')
 evaluate_gpu_temperature('xe-pci-0300', 'pkg')
+set_fan_profile(REDFISH_OBJ, 'fan_profiles.json')
 REDFISH_OBJ.logout()
 
 # print the response | remove later
