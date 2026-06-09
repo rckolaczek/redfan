@@ -2,6 +2,7 @@ import sys
 import json
 import redfish
 import keyring
+import subprocess
 
 login_account = 'admin'
 
@@ -42,13 +43,13 @@ def get_fan_profile(REDFISH_OBJ):
 
 # change the active fan profile | dump to file
 fan_profile = get_fan_profile(REDFISH_OBJ)
-headers = {'Content-Type': 'multipart/form-data'}
 new_profile = 'Unraid-Default-GPU'
 fan_profile['strMode'] = new_profile
 with open('fan_profiles.json', 'w') as f:
     json.dump(fan_profile, f)
 
 # import the new profile
+headers = {'Content-Type': 'multipart/form-data'}
 with open('fan_profiles.json', 'rb') as file_stream:
     payload = {
         'ImportFanprofile': ('fan_profiles.json', file_stream, 'application/octet-stream')
