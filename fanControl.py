@@ -1,90 +1,144 @@
+# fanControl.py
 import sys
 import json
 import redfish
 import keyring
+import logging
 from gpuControl import *
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),                        # Output to console
+        logging.FileHandler("fan_control.log")          # Output to a shared file
+    ]
+)
+
+def setup_logger():
+    """Setup logger with a specific log level and format."""
+    logger = logging.getLogger(__name__)
+    if not logger.hasHandlers():  # To avoid adding multiple handlers
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+    return logger
+
+logger = setup_logger()
 
 # authentication
 login_account = 'admin'
 password = keyring.get_password('redfish', login_account)
 login_host = f'https://{keyring.get_password('redfish', 'host')}'
 
-if not password:
-    # If no password is stored in the keyring, prompt for one and store it
-    password = input(f'Enter password for {login_account}: ')
-    keyring.set_password('redfish', login_account, password)
-if not login_host:
-    login_host = input(f'Enter password for {login_host}: ')
-    keyring.set_password('redfish', 'host', login_host)
+try:
+    if not password:
+        # If no password is stored in the keyring, prompt for one and store it
+        password = input(f'Enter password for {login_account}: ')
+        keyring.set_password('redfish', login_account, password)
+    if not login_host:
+            login_host = input(f'Enter host for redfish: ')
+            keyring.set_password('redfish', 'host', login_host)
+
+except Exception as e:
+    logger.error(f"Authentication setup failed: {e}")
+    sys.exit(1)
 
 # helpers
 def get_odata_spec(REDFISH_OBJ):
-    response = REDFISH_OBJ.get("/redfish/v1/JsonSchemas/GBTFanprofileService.v1_0_0.json", None)
-    return response
+    try:
+        response = REDFISH_OBJ.get("/redfish/v1/JsonSchemas/GBTFanprofileService.v1_0_0.json", None)
+        logger.info("Successfully fetched OData spec")
+        return response
+    except Exception as e:
+        logger.error(f"Failed to fetch OData spec: {e}")
+        return None
 
 def get_system(REDFISH_OBJ):
-    response = REDFISH_OBJ.get("/redfish/v1/Systems/1", None)
-    return response
+    try:
+        response = REDFISH_OBJ.get("/redfish/v1/Systems/1", None)
+        logger.info("Successfully fetched system information")
+        return response
+    except Exception as e:
+        logger.error(f"Failed to fetch system information: {e}")
+        return None
 
 def get_temp_sensors(REDFISH_OBJ):
-    response = REDFISH_OBJ.get("/redfish/v1/Chassis/Self/Thermal", None).dict
-    temperatures = response.get('Temperatures', [])
-    return temperatures
+    try:
+        response = REDFISH_OBJ.get("/redfish/v1/Chassis/Self/Thermal", None).dict
+        temperatures = response.get('Temperatures', [])
+        logger.info(f"Successfully fetched temperature sensors: {len(temperatures)} found")
+        return temperatures
+    except Exception as e:
+        logger.error(f"Failed to fetch temperature sensors: {e}")
+        return []
 
 def get_fan_profile(REDFISH_OBJ):
-    response = REDFISH_OBJ.get("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", None).dict
-    return response
+    try:
+        response = REDFISH_OBJ.get("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", None).dict
+        logger.info("Successfully fetched fan profile")
+        return response
+    except Exception as e:
+        logger.error(f"Failed to fetch fan profile: {e}")
+        return {}
 
 def dump_fan_profile(REDFISH_OBJ, new_mode):
-    fan_profile = get_fan_profile(REDFISH_OBJ)
-    fan_profile['strMode'] = new_mode
-    with open('fan_profiles.json', 'w') as f:
-        json.dump(fan_profile, f)
+    try:
+        fan_profile = get_fan_profile(REDFISH_OBJ)
+        fan_profile['strMode'] = new_mode
+        with open('fan_profiles.json', 'w') as f:
+            json.dump(fan_profile, f)
+            logger.info(f"Dumped fan profile with mode: {new_mode}")
+    except Exception as e:
+        logger.error(f"Failed to dump fan profile: {e}")
 
 def set_fan_profile(REDFISH_OBJ, profile_file):
-    headers = {'Content-Type': 'multipart/form-data'}
-    with open(profile_file, 'rb') as file_stream:
-        payload = {
-            'ImportFanprofile': ('fan_profiles.json', file_stream, 'application/octet-stream')
-        }
-        response = REDFISH_OBJ.post("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", body=payload, headers=headers)
-    return response
+    try:
+        headers = {'Content-Type': 'multipart/form-data'}
+        with open(profile_file, 'rb') as file_stream:
+            payload = {
+                'ImportFanprofile': ('fan_profiles.json', file_stream, 'application/octet-stream')
+            }
+            response = REDFISH_OBJ.post("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", body=payload, headers=headers)
+            logger.info("Successfully set fan profile")
+        return response
+    except Exception as e:
+        logger.error(f"Failed to set fan profile: {e}")
+        return None
 
 def evaluate_gpu_temperature(gpu_name, sensor_path):
-    gpuTemp = get_sensors(gpu_name).get(sensor_path)
-    if gpuTemp:
-        if gpuTemp >= 65:
-            print('Half')
-        elif gpuTemp >= 85:
-            print('Full')
-    else:
-        print('Auto')
-
-
+    try:
+        gpuTemp = get_sensors(gpu_name).get(sensor_path)
+        if gpuTemp is not None:
+            logger.info(f"Evaluated GPU temperature for {gpu_name}: {gpuTemp}°C")
+            if gpuTemp >= 65 and gpuTemp < 85:
+                print('Half')
+            elif gpuTemp >= 85:
+                print('Full')
+        else:
+            logger.warning(f"No temperature data found for GPU sensor path: {sensor_path}")
+    except Exception as e:
+        logger.error(f"Failed to evaluate GPU temperature: {e}")
 
 # main
-REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account, \
+try:
+    REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
                       password=password, default_prefix='/redfish/v1/')
-REDFISH_OBJ.login(auth="session")
+    REDFISH_OBJ.login(auth="session")
+    logger.info("Successfully logged into Redfish server")
 
-# dump fan profile | update active profile settings | evaluate GPU | import new profile
-new_mode = 'Unraid-Default-GPU'
-dump_fan_profile(REDFISH_OBJ, new_mode)
-evaluate_gpu_temperature('xe-pci-0300', 'pkg')
-set_fan_profile(REDFISH_OBJ, 'fan_profiles.json')
-REDFISH_OBJ.logout()
+    # dump fan profile | update active profile settings | evaluate GPU | import new profile
+    new_mode = 'Unraid-Default-GPU'
+    dump_fan_profile(REDFISH_OBJ, new_mode)
+    evaluate_gpu_temperature('xe-pci-0300', 'pkg')
+    set_fan_profile(REDFISH_OBJ, 'fan_profiles.json')
 
-# print the response | remove later
-# sys.stdout.write("%s\n" % response)
-# print(response)
-# print(response.dict)
-# print(temperatures)
-# print(fan_profiles)
+except Exception as e:
+    logger.error(f"Main execution failed: {e}")
+finally:
+    REDFISH_OBJ.logout()
 
-# print temperatures
-# for temp in temperatures:
-#     print(f"Sensor Name: {temp['Name']}, Reading: {temp['ReadingCelsius']}°C")
 
-# # print fan profiles
-# for policy in fan_profiles:
-#     print(f"Profile Name: {policy['strName']}")

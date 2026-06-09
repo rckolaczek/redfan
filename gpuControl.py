@@ -1,6 +1,10 @@
+# gpuControl.py
 import os
 import json
 import subprocess
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_sensors(gpu_id=None):
     try:
@@ -11,8 +15,9 @@ def get_sensors(gpu_id=None):
         else:
             raise Exception("Unsupported operating system")
 
+        logger.info(f"Successfully fetched sensor data")
         if gpu_id:
             return result.get(gpu_id, {})
     except Exception as e:
-        print(f"Error fetching Intel GPU temperature using sensors: {e}")
-    return result
+        logger.error(f"Error fetching sensors: {e}")
+    return {}
