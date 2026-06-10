@@ -1,11 +1,13 @@
 # fanControl.py
 import json
 import logging
+from pathlib import Path
 from gpuControl import *
 
 logger = logging.getLogger(__name__)
 
 # helpers
+
 def setup_logger():
     """Setup logger with a specific log level and format."""
     logger = logging.getLogger(__name__)
@@ -16,6 +18,37 @@ def setup_logger():
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
     return logger
+
+def load_config(file_path: str) -> dict:
+    """
+    Loads a JSON config file. If a relative path is given, 
+    it searches relative to the script's directory.
+    """
+    provided_path = Path(file_path)
+    
+    # Check if the user provided an absolute/full path
+    if provided_path.is_absolute():
+        final_path = provided_path
+    else:
+        # __file__ is the current script's path. .parent gets its folder.
+        script_dir = Path(__file__).parent.resolve()
+        final_path = script_dir / provided_path
+
+    logger.info(f"Looking for configuration file at: {final_path}")
+    
+    if not final_path.exists():
+        logger.error(f"Configuration file does not exist: {final_path}")
+        raise FileNotFoundError(f"Missing config file: {final_path}")
+        
+    try:
+        with open(final_path, "r", encoding="utf-8") as file:
+            config_data = json.load(file)
+            logger.info("Configuration file loaded successfully.")
+            return config_data
+            
+    except json.JSONDecodeError as error:
+        logger.error(f"Invalid JSON syntax in config file: {error}")
+        raise
 
 def get_odata_spec(REDFISH_OBJ):
     try:

@@ -14,19 +14,6 @@ logging.basicConfig(
 )
 logger = setup_logger()
 
-# custom configuration for fan profile and temperature sensor path in your environment
-custom_config = {
-    "sensor_profile": {
-        "gpu_name": "xe-pci-0300",
-        "sensor_path": "pkg"
-    },
-    "fan_profile": {
-        "Auto": "Unraid-Default",
-        "Half": "Unraid-Default-GPU",
-        "Full": "Unraid-Default-FullThrottle"
-    }
-}
-
 # authentication setup
 login_account = 'admin'
 password = keyring.get_password('redfish', login_account)
@@ -48,6 +35,9 @@ except Exception as e:
 # main
 def main():
     try:
+        # custom configuration for fan profile and temperature sensor path in your environment
+        custom_config = load_config('config.json')
+
         # authenticate to Redfish server 
         REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
                         password=password, default_prefix='/redfish/v1/')

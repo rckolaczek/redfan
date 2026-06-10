@@ -13,8 +13,10 @@ def get_sensors(gpu_id=None):
             result = json.loads(subprocess.run(['sensors', '-j'], capture_output=True, text=True).stdout)
         elif os.name == 'nt':
             result = {} # Placeholder response for Windows | tbd
+            logger.info("Windows sensors not supported yet, evaluating anyway")
         else:
-            raise Exception("Unsupported operating system")
+            logger.error("Unsupported operating system")
+            raise
 
         logger.info(f"Successfully fetched sensor data")
         if gpu_id:
