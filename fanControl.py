@@ -1,21 +1,11 @@
 # fanControl.py
-import sys
 import json
-import redfish
-import keyring
 import logging
 from gpuControl import *
 
-# logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),                        # Output to console
-        logging.FileHandler("fan_control.log")          # Output to a shared file
-    ]
-)
+logger = logging.getLogger(__name__)
 
+# helpers
 def setup_logger():
     """Setup logger with a specific log level and format."""
     logger = logging.getLogger(__name__)
@@ -27,27 +17,6 @@ def setup_logger():
         logger.setLevel(logging.INFO)
     return logger
 
-logger = setup_logger()
-
-# authentication
-login_account = 'admin'
-password = keyring.get_password('redfish', login_account)
-login_host = f'https://{keyring.get_password('redfish', 'host')}'
-
-try:
-    if not password:
-        # If no password is stored in the keyring, prompt for one and store it
-        password = input(f'Enter password for {login_account}: ')
-        keyring.set_password('redfish', login_account, password)
-    if not login_host:
-            login_host = input(f'Enter host for redfish: ')
-            keyring.set_password('redfish', 'host', login_host)
-
-except Exception as e:
-    logger.error(f"Authentication setup failed: {e}")
-    sys.exit(1)
-
-# helpers
 def get_odata_spec(REDFISH_OBJ):
     try:
         response = REDFISH_OBJ.get("/redfish/v1/JsonSchemas/GBTFanprofileService.v1_0_0.json", None)
@@ -127,55 +96,22 @@ def set_fan_profile(REDFISH_OBJ, profile_file):
     except Exception as e:
         logger.error(f"Failed to set fan profile: {e}")
         return None
-
-def evaluate_gpu_temperature(gpu_name, sensor_path):
+    
+def evaluate_fan_mode(REDFISH_OBJ, config):
     try:
-        fan_profile = 'Auto'
-        gpuTemp = get_sensors(gpu_name).get(sensor_path)
-        if gpuTemp is not None:
-            logger.info(f"Evaluated GPU temperature for {gpu_name}: {gpuTemp}°C")
-            if gpuTemp >= 65 and gpuTemp < 85:
-                logger.info("Set fans to Half")
-                fan_profile = 'Half'
-            elif gpuTemp >= 85:
-                logger.info("Set fans to Full")
-                fan_profile = 'Full'
+        new_mode = evaluate_gpu_temperature(
+            config.get('sensor_profile').get('gpu_name'),
+            config.get('sensor_profile').get('sensor_path')
+        )
+        if config.get('fan_profile'):
+            logger.info(f"Setting Fan Mode based on Custom profile: {new_mode}")
+            new_profile = config.get('fan_profile').get(new_mode)
+            dump_fan_profile(REDFISH_OBJ, new_profile)
+            set_fan_profile(REDFISH_OBJ, 'fan_profile.json')
         else:
-            logger.warning(f"No temperature data found for GPU sensor path: {sensor_path}")
-            logger.info("Set fans to Auto")
+            logger.info(f"Custom fan profile is empty. Setting Fan Mode based on Default profile: {new_mode}")
+            dump_fan_profile(REDFISH_OBJ, 'default')
+            set_fan_profile(REDFISH_OBJ, 'fan_profile.json')
+            set_fan_mode(REDFISH_OBJ, new_mode)
     except Exception as e:
-        logger.error(f"Failed to evaluate GPU temperature: {e}")
-        logger.info("Set fans to Auto")
-    finally:
-        return fan_profile
-
-# main
-try:
-    REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
-                      password=password, default_prefix='/redfish/v1/')
-    REDFISH_OBJ.login(auth="session")
-    logger.info("Successfully logged into Redfish server")
-
-
-    # evaluate GPU | dump fan profile | update active profile settings | import new profile
-    new_mode = evaluate_gpu_temperature('xe-pci-0300', 'pkg')
-    if new_mode == 'Half':
-        new_profile = 'Unraid-Default-GPU'
-    elif new_mode == 'Full':
-        new_profile = 'Unraid-Default-GPU'
-    else:
-        new_profile = 'Unraid-Default'
-    dump_fan_profile(REDFISH_OBJ, new_profile)
-    set_fan_profile(REDFISH_OBJ, 'fan_profiles.json')
-
-    # # evaluate GPU | set fan mode
-    # new_mode = evaluate_gpu_temperature('xe-pci-0300', 'pkg')
-    # set_fan_mode(REDFISH_OBJ, new_mode)
-
-
-except Exception as e:
-    logger.error(f"Main execution failed: {e}")
-finally:
-    REDFISH_OBJ.logout()
-
-
+        logger.error(f"Failed to evaluate fan mode: {e}")

@@ -1,0 +1,66 @@
+import sys
+import keyring
+import redfish
+from fanControl import *
+
+# logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),                        # Output to console
+        logging.FileHandler("redfan.log")               # Output to a shared file
+    ]
+)
+logger = setup_logger()
+
+# custom configuration for fan profile and temperature sensor path in your environment
+custom_config = {
+    "sensor_profile": {
+        "gpu_name": "xe-pci-0300",
+        "sensor_path": "pkg"
+    },
+    "fan_profile": {
+        "Auto": "Unraid-Default",
+        "Half": "Unraid-Default-GPU",
+        "Full": "Unraid-Default-FullThrottle"
+    }
+}
+
+# authentication setup
+login_account = 'admin'
+password = keyring.get_password('redfish', login_account)
+login_host = f'https://{keyring.get_password('redfish', 'host')}'
+
+try:
+    if not password:
+        # If no password is stored in the keyring, prompt for one and store it
+        password = input(f'Enter password for {login_account}: ')
+        keyring.set_password('redfish', login_account, password)
+    if not login_host:
+            login_host = input(f'Enter host for redfish: ')
+            keyring.set_password('redfish', 'host', login_host)
+
+except Exception as e:
+    logger.error(f"Authentication setup failed: {e}")
+    sys.exit(1)
+
+# main
+def main():
+    try:
+        # authenticate to Redfish server 
+        REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
+                        password=password, default_prefix='/redfish/v1/')
+        REDFISH_OBJ.login(auth="session")
+        logger.info("Successfully logged into Redfish server")
+
+        # evaluate GPU temperatures | evaluate fan modes | dump and update fan profile | import new profile and/or set new mode
+        evaluate_fan_mode(REDFISH_OBJ, custom_config)
+
+    except Exception as e:
+        logger.error(f"Main execution failed: {e}")
+    finally:
+        REDFISH_OBJ.logout()
+
+if __name__ == "__main__":
+    main()
