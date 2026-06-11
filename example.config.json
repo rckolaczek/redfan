@@ -7,5 +7,9 @@
         "Auto": "Default",
         "Half": "Default-Half",
         "Full": "Default-Full"
+    },
+    "temp_profile": {
+        "min": 65,
+        "max": 80
     }
 }
