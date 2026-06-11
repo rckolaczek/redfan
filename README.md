@@ -55,6 +55,9 @@ pip install -r requirements.txt
    keyring.set_password('redfish', 'host', 'your_host')
    ```
 
+   **NOTE: You will need to install the keyrings.alt package if you are using a headless install (e.g. Unraid).  This is not included in the requirements.txt.**
+
+
 ### Usage
 
 Run the main script to start monitoring and adjusting fan modes based on GPU temperature:

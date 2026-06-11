@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_sensors(gpu_id=None):
     try:
         if os.name == 'posix':
-            result = json.loads(subprocess.run(['sensors', '-j'], capture_output=True, text=True).stdout)
+            result = json.loads(subprocess.run(['sensors', '-j'], capture_output=True, text=True).stdout, object_pairs_hook=parse_duplicates)
         elif os.name == 'nt':
             result = {} # Placeholder response for Windows | tbd
             logger.info("Windows sensors not supported yet, evaluating anyway")
@@ -45,3 +45,7 @@ def evaluate_gpu_temperature(gpu_name, sensor_path):
         logger.info("Set fans to Auto")
     finally:
         return fan_profile
+    
+def parse_duplicates(pairs):
+    """Recursively parses json without letting duplicate keys overwrite each other."""
+    return pairs
