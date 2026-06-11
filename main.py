@@ -41,7 +41,7 @@ def main():
         custom_config = load_config('config.json')
 
         # authenticate to Redfish server 
-        REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
+        REDFISH_OBJ = redfish.redfish_client(base_url=login_url, username=login_account,
                         password=password, default_prefix='/redfish/v1/')
         REDFISH_OBJ.login(auth="session")
         logger.info("Successfully logged into Redfish server")
