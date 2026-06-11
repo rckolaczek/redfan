@@ -35,7 +35,7 @@ def get_sensors():
             result = json.loads(subprocess.run(['sensors', '-j'], capture_output=True, text=True).stdout, object_pairs_hook=combine_duplicate_keys)
         elif os.name == 'nt':
             # Placeholder response for Windows | place a test file in the script root if you want to evaluate
-            with open(get_local_path("sensors.example.json")) as file:
+            with open(get_local_path("example.sensors.json")) as file:
                 result = json.load(file, object_pairs_hook=combine_duplicate_keys)
             logger.info("Windows sensors not supported yet, evaluating anyway with a test file")
         else:

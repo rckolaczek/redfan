@@ -142,8 +142,13 @@ def evaluate_fan_mode(REDFISH_OBJ, config):
         if config.get('fan_profile'):
             logger.info(f"Setting Fan Mode based on Custom profile: {new_mode}")
             new_profile = config.get('fan_profile').get(new_mode)
-            response = set_fan_profile(REDFISH_OBJ, dump_fan_profile(REDFISH_OBJ, new_profile))
-            return response
+            old_profile = get_fan_profile(REDFISH_OBJ).get('strMode',{})
+            if old_profile != new_profile:
+                response = set_fan_profile(REDFISH_OBJ, dump_fan_profile(REDFISH_OBJ, new_profile))
+                return response
+            else:
+                logger.info(f"Fan Mode is already set to: {new_mode}")
+                return {}
         else:
             logger.info(f"Custom fan profile is empty. Setting Fan Mode based on Default profile: {new_mode}")
             dump_fan_profile(REDFISH_OBJ, 'default')
