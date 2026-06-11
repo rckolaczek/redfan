@@ -1,0 +1,206 @@
+{
+   "xe-pci-0300":{
+      "Adapter": "PCI adapter",
+      "pkg":{
+         "temp2_input": 64.000
+      },
+      "vram":{
+         "temp3_input": 60.000
+      },
+      "card":{
+         "power1_cap": 150.000,
+         "power1_crit": 300.000
+      },
+      "card":{
+         "energy1_input": 14972669.464
+      },
+      "pkg":{
+         "energy2_input": 8738214.316
+      }
+   },
+   "acpitz-acpi-0":{
+      "Adapter": "ACPI interface",
+      "MB Temp":{
+         "temp1_input": 27.800
+      }
+   },
+   "nvme-pci-0700":{
+      "Adapter": "PCI adapter",
+      "Composite":{
+         "temp1_input": 38.850,
+         "temp1_max": 74.850,
+         "temp1_min": -273.150,
+         "temp1_crit": 79.850,
+         "temp1_alarm": 0.000
+      },
+      "Sensor 1":{
+         "temp2_input": 59.850,
+         "temp2_max": 65261.850,
+         "temp2_min": -273.150
+      },
+      "Sensor 2":{
+         "temp3_input": 55.850,
+         "temp3_max": 65261.850,
+         "temp3_min": -273.150
+      },
+      "Sensor 3":{
+         "temp4_input": 38.850,
+         "temp4_max": 65261.850,
+         "temp4_min": -273.150
+      }
+   },
+   "coretemp-isa-0000":{
+      "Adapter": "ISA adapter",
+      "CPU Temp":{
+         "temp1_input": 28.000,
+         "temp1_max": 80.000,
+         "temp1_crit": 100.000,
+         "temp1_crit_alarm": 0.000
+      },
+      "Core 0":{
+         "temp2_input": 24.000,
+         "temp2_max": 80.000,
+         "temp2_crit": 100.000,
+         "temp2_crit_alarm": 0.000
+      },
+      "Core 4":{
+         "temp6_input": 23.000,
+         "temp6_max": 80.000,
+         "temp6_crit": 100.000,
+         "temp6_crit_alarm": 0.000
+      },
+      "Core 8":{
+         "temp10_input": 24.000,
+         "temp10_max": 80.000,
+         "temp10_crit": 100.000,
+         "temp10_crit_alarm": 0.000
+      },
+      "Core 12":{
+         "temp14_input": 27.000,
+         "temp14_max": 80.000,
+         "temp14_crit": 100.000,
+         "temp14_crit_alarm": 0.000
+      },
+      "Core 16":{
+         "temp18_input": 25.000,
+         "temp18_max": 80.000,
+         "temp18_crit": 100.000,
+         "temp18_crit_alarm": 0.000
+      },
+      "Core 20":{
+         "temp22_input": 24.000,
+         "temp22_max": 80.000,
+         "temp22_crit": 100.000,
+         "temp22_crit_alarm": 0.000
+      },
+      "Core 24":{
+         "temp26_input": 24.000,
+         "temp26_max": 80.000,
+         "temp26_crit": 100.000,
+         "temp26_crit_alarm": 0.000
+      },
+      "Core 28":{
+         "temp30_input": 24.000,
+         "temp30_max": 80.000,
+         "temp30_crit": 100.000,
+         "temp30_crit_alarm": 0.000
+      },
+      "Core 32":{
+         "temp34_input": 28.000,
+         "temp34_max": 80.000,
+         "temp34_crit": 100.000,
+         "temp34_crit_alarm": 0.000
+      },
+      "Core 33":{
+         "temp35_input": 28.000,
+         "temp35_max": 80.000,
+         "temp35_crit": 100.000,
+         "temp35_crit_alarm": 0.000
+      },
+      "Core 34":{
+         "temp36_input": 28.000,
+         "temp36_max": 80.000,
+         "temp36_crit": 100.000,
+         "temp36_crit_alarm": 0.000
+      },
+      "Core 35":{
+         "temp37_input": 29.000,
+         "temp37_max": 80.000,
+         "temp37_crit": 100.000,
+         "temp37_crit_alarm": 0.000
+      },
+      "Core 36":{
+         "temp38_input": 25.000,
+         "temp38_max": 80.000,
+         "temp38_crit": 100.000,
+         "temp38_crit_alarm": 0.000
+      },
+      "Core 37":{
+         "temp39_input": 25.000,
+         "temp39_max": 80.000,
+         "temp39_crit": 100.000,
+         "temp39_crit_alarm": 0.000
+      },
+      "Core 38":{
+         "temp40_input": 25.000,
+         "temp40_max": 80.000,
+         "temp40_crit": 100.000,
+         "temp40_crit_alarm": 0.000
+      },
+      "Core 39":{
+         "temp41_input": 25.000,
+         "temp41_max": 80.000,
+         "temp41_crit": 100.000,
+         "temp41_crit_alarm": 0.000
+      },
+      "Core 40":{
+         "temp42_input": 26.000,
+         "temp42_max": 80.000,
+         "temp42_crit": 100.000,
+         "temp42_crit_alarm": 0.000
+      },
+      "Core 41":{
+         "temp43_input": 26.000,
+         "temp43_max": 80.000,
+         "temp43_crit": 100.000,
+         "temp43_crit_alarm": 0.000
+      },
+      "Core 42":{
+         "temp44_input": 26.000,
+         "temp44_max": 80.000,
+         "temp44_crit": 100.000,
+         "temp44_crit_alarm": 0.000
+      },
+      "Core 43":{
+         "temp45_input": 26.000,
+         "temp45_max": 80.000,
+         "temp45_crit": 100.000,
+         "temp45_crit_alarm": 0.000
+      }
+   },
+   "nvme-pci-0600":{
+      "Adapter": "PCI adapter",
+      "Composite":{
+         "temp1_input": 30.850,
+         "temp1_max": 74.850,
+         "temp1_min": -273.150,
+         "temp1_crit": 79.850,
+         "temp1_alarm": 0.000
+      },
+      "Sensor 1":{
+         "temp2_input": 49.850,
+         "temp2_max": 65261.850,
+         "temp2_min": -273.150
+      },
+      "Sensor 2":{
+         "temp3_input": 46.850,
+         "temp3_max": 65261.850,
+         "temp3_min": -273.150
+      },
+      "Sensor 3":{
+         "temp4_input": 30.850,
+         "temp4_max": 65261.850,
+         "temp4_min": -273.150
+      }
+   }
+}

@@ -1,9 +1,11 @@
 # fanControl.py
 import json
 import logging
+from pathlib import Path
 from gpuControl import *
 
 logger = logging.getLogger(__name__)
+
 
 # helpers
 def setup_logger():
@@ -16,6 +18,35 @@ def setup_logger():
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
     return logger
+
+def load_config(file_path: str) -> dict:
+    """
+    Loads a JSON config file. If a relative path is given, 
+    it searches relative to the script's directory.
+    """
+    provided_path = Path(file_path)
+    
+    # Check if the user provided an absolute/full path
+    if provided_path.is_absolute():
+        final_path = provided_path
+    else:
+        final_path = get_local_path(provided_path)
+
+    logger.info(f"Looking for configuration file at: {final_path}")
+    
+    if not final_path.exists():
+        logger.error(f"Configuration file does not exist: {final_path}")
+        raise FileNotFoundError(f"Missing config file: {final_path}")
+        
+    try:
+        with open(final_path, "r", encoding="utf-8") as file:
+            config_data = json.load(file)
+            logger.info("Configuration file loaded successfully.")
+            return config_data
+            
+    except json.JSONDecodeError as error:
+        logger.error(f"Invalid JSON syntax in config file: {error}")
+        raise
 
 def get_odata_spec(REDFISH_OBJ):
     try:
@@ -65,11 +96,13 @@ def get_fan_profile(REDFISH_OBJ):
 
 def dump_fan_profile(REDFISH_OBJ, new_mode):
     try:
+        fan_profile_path = get_local_path('fan_profile.json')
         fan_profile = get_fan_profile(REDFISH_OBJ)
         fan_profile['strMode'] = new_mode
-        with open('fan_profile.json', 'w') as f:
+        with open(get_local_path(fan_profile_path), 'w') as f:
             json.dump(fan_profile, f)
-            logger.info(f"Dumped fan profile with mode: {new_mode}")
+            logger.info(f"Dumped fan profile to {fan_profile_path} with mode: {new_mode}")
+            return fan_profile_path
     except Exception as e:
         logger.error(f"Failed to dump fan profile: {e}")
 
@@ -83,12 +116,12 @@ def set_fan_mode(REDFISH_OBJ, new_mode):
         logger.error(f"Failed to set fan mode: {e}")
         return None
 
-def set_fan_profile(REDFISH_OBJ, profile_file):
+def set_fan_profile(REDFISH_OBJ, profile_path):
     try:
         headers = {'Content-Type': 'multipart/form-data'}
-        with open(profile_file, 'rb') as file_stream:
+        with open(profile_path, 'rb') as file_stream:
             payload = {
-                'ImportFanprofile': ('fan_profiles.json', file_stream, 'application/octet-stream')
+                'ImportFanprofile': ('fan_profile.json', file_stream, 'application/octet-stream')
             }
             response = REDFISH_OBJ.post("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", body=payload, headers=headers)
             logger.info("Successfully set fan profile")
@@ -101,17 +134,21 @@ def evaluate_fan_mode(REDFISH_OBJ, config):
     try:
         new_mode = evaluate_gpu_temperature(
             config.get('sensor_profile').get('gpu_name'),
-            config.get('sensor_profile').get('sensor_path')
+            config.get('sensor_profile').get('sensor_package'),
+            config.get('sensor_profile').get('sensor_name'),
+            config.get('temp_profile').get('min'),
+            config.get('temp_profile').get('max')
         )
         if config.get('fan_profile'):
             logger.info(f"Setting Fan Mode based on Custom profile: {new_mode}")
             new_profile = config.get('fan_profile').get(new_mode)
-            dump_fan_profile(REDFISH_OBJ, new_profile)
-            set_fan_profile(REDFISH_OBJ, 'fan_profile.json')
+            response = set_fan_profile(REDFISH_OBJ, dump_fan_profile(REDFISH_OBJ, new_profile))
+            return response
         else:
             logger.info(f"Custom fan profile is empty. Setting Fan Mode based on Default profile: {new_mode}")
             dump_fan_profile(REDFISH_OBJ, 'default')
-            set_fan_profile(REDFISH_OBJ, 'fan_profile.json')
-            set_fan_mode(REDFISH_OBJ, new_mode)
+            set_fan_profile(REDFISH_OBJ, dump_fan_profile(REDFISH_OBJ, new_profile))
+            response = set_fan_mode(REDFISH_OBJ, new_mode)
+            return response
     except Exception as e:
         logger.error(f"Failed to evaluate fan mode: {e}")

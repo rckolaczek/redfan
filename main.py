@@ -1,3 +1,4 @@
+# main.py
 import sys
 import keyring
 import redfish
@@ -8,29 +9,17 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(),                        # Output to console
-        logging.FileHandler("redfan.log")               # Output to a shared file
+    logging.StreamHandler(),                                # Output to console
+    logging.FileHandler(get_local_path("redfan.log"))       # Output to a file in the script's execution directory
     ]
 )
 logger = setup_logger()
 
-# custom configuration for fan profile and temperature sensor path in your environment
-custom_config = {
-    "sensor_profile": {
-        "gpu_name": "xe-pci-0300",
-        "sensor_path": "pkg"
-    },
-    "fan_profile": {
-        "Auto": "Unraid-Default",
-        "Half": "Unraid-Default-GPU",
-        "Full": "Unraid-Default-FullThrottle"
-    }
-}
-
 # authentication setup
 login_account = 'admin'
 password = keyring.get_password('redfish', login_account)
-login_host = f'https://{keyring.get_password('redfish', 'host')}'
+login_host = keyring.get_password('redfish', 'host')
+login_url = f"https://{login_host}"
 
 try:
     if not password:
@@ -48,8 +37,11 @@ except Exception as e:
 # main
 def main():
     try:
+        # custom configuration for fan profile and temperature sensor path in your environment
+        custom_config = load_config('config.json')
+
         # authenticate to Redfish server 
-        REDFISH_OBJ = redfish.redfish_client(base_url=login_host, username=login_account,
+        REDFISH_OBJ = redfish.redfish_client(base_url=login_url, username=login_account,
                         password=password, default_prefix='/redfish/v1/')
         REDFISH_OBJ.login(auth="session")
         logger.info("Successfully logged into Redfish server")
