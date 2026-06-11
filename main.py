@@ -52,7 +52,7 @@ def main():
         REDFISH_OBJ.login(auth="session")
         logger.info("Successfully logged into Redfish server")
 
-        # evaluate GPU temperatures | evaluate fan modes | dump and update fan profile | import new profile and/or set new mode
+        # evaluate Device temperatures | evaluate fan modes | dump and update fan profile | import new profile and/or set new mode
         evaluate_fan_mode(REDFISH_OBJ, custom_config)
 
     except Exception as e:

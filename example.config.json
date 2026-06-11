@@ -1,6 +1,6 @@
 {
     "sensor_profile": {
-        "gpu_name": "xe-pci-0300",
+        "device_name": "xe-pci-0300",
         "sensor_path": "pkg"
     },
     "fan_profile": {

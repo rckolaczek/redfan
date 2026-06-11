@@ -2,7 +2,7 @@
 import json
 import logging
 from pathlib import Path
-from gpuControl import *
+from sensorControl import *
 
 logger = logging.getLogger(__name__)
 
@@ -132,8 +132,8 @@ def set_fan_profile(REDFISH_OBJ, profile_path):
     
 def evaluate_fan_mode(REDFISH_OBJ, config):
     try:
-        new_mode = evaluate_gpu_temperature(
-            config.get('sensor_profile').get('gpu_name'),
+        new_mode = evaluate_sensor_temperature(
+            config.get('sensor_profile').get('device_name'),
             config.get('sensor_profile').get('sensor_package'),
             config.get('sensor_profile').get('sensor_name'),
             config.get('temp_profile').get('min'),

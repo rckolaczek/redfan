@@ -1,4 +1,4 @@
-# gpuControl.py
+# sensorControl.py
 import os
 import json
 from pathlib import Path
@@ -46,27 +46,27 @@ def get_sensors():
         logger.error(f"Error fetching sensors: {e}")
     return result
 
-def evaluate_gpu_temperature(gpu_name, sensor_package, sensor_name, min_threshold=60, max_threshold=80, gpu_temp=None):
+def evaluate_sensor_temperature(device_name, sensor_package, sensor_name, min_threshold=60, max_threshold=80, sensor_temp=None):
     try:
         fan_profile = 'Auto'
-        sensors = get_sensors().get(gpu_name,{}).get(sensor_package,{})
+        sensors = get_sensors().get(device_name,{}).get(sensor_package,{})
         for i in sensors:
             if sensor_name in i:
-                gpu_temp = i.get(sensor_name,None)
+                sensor_temp = i.get(sensor_name,None)
                 break
-        if gpu_temp:
-            logger.info(f"Evaluated GPU temperature for {gpu_name}: {gpu_temp}°C")
-            if gpu_temp >= min_threshold and gpu_temp < max_threshold:
+        if sensor_temp:
+            logger.info(f"Evaluated Device temperature for {sensor_name}: {sensor_temp}°C")
+            if sensor_temp >= min_threshold and sensor_temp < max_threshold:
                 logger.info("Set fans to Half")
                 fan_profile = 'Half'
-            elif gpu_temp >= max_threshold:
+            elif sensor_temp >= max_threshold:
                 logger.info("Set fans to Full")
                 fan_profile = 'Full'
         else:
-            logger.warning(f"No temperature data found for GPU sensor path: {gpu_name}.{sensor_package}.{sensor_name}")
+            logger.warning(f"No temperature data found for Device sensor path: {sensor_name}.{sensor_package}.{sensor_name}")
             logger.info("Set fans to Auto")
     except Exception as e:
-        logger.error(f"Failed to evaluate GPU temperature: {e}")
+        logger.error(f"Failed to evaluate Device temperature: {e}")
         logger.info("Set fans to Auto")
     finally:
         return fan_profile
