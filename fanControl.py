@@ -135,7 +135,9 @@ def evaluate_fan_mode(REDFISH_OBJ, config):
         new_mode = evaluate_gpu_temperature(
             config.get('sensor_profile').get('gpu_name'),
             config.get('sensor_profile').get('sensor_package'),
-            config.get('sensor_profile').get('sensor_name')
+            config.get('sensor_profile').get('sensor_name'),
+            config.get('temp_profile').get('min'),
+            config.get('temp_profile').get('max')
         )
         if config.get('fan_profile'):
             logger.info(f"Setting Fan Mode based on Custom profile: {new_mode}")

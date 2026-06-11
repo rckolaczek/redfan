@@ -46,7 +46,7 @@ def get_sensors():
         logger.error(f"Error fetching sensors: {e}")
     return result
 
-def evaluate_gpu_temperature(gpu_name, sensor_package, sensor_name, gpu_temp=None):
+def evaluate_gpu_temperature(gpu_name, sensor_package, sensor_name, min_threshold=60, max_threshold=80, gpu_temp=None):
     try:
         fan_profile = 'Auto'
         sensors = get_sensors().get(gpu_name,{}).get(sensor_package,{})
@@ -56,10 +56,10 @@ def evaluate_gpu_temperature(gpu_name, sensor_package, sensor_name, gpu_temp=Non
                 break
         if gpu_temp:
             logger.info(f"Evaluated GPU temperature for {gpu_name}: {gpu_temp}°C")
-            if gpu_temp >= 65 and gpu_temp < 85:
+            if gpu_temp >= min_threshold and gpu_temp < max_threshold:
                 logger.info("Set fans to Half")
                 fan_profile = 'Half'
-            elif gpu_temp >= 85:
+            elif gpu_temp >= max_threshold:
                 logger.info("Set fans to Full")
                 fan_profile = 'Full'
         else:
