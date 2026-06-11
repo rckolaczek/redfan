@@ -1,3 +1,4 @@
+# main.py
 import sys
 import keyring
 import redfish
@@ -8,8 +9,8 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-logging.StreamHandler(),                                        # Output to console
-        logging.FileHandler(get_local_path("redfan.log"))       # Output to a file in the script's execution directory
+    logging.StreamHandler(),                                # Output to console
+    logging.FileHandler(get_local_path("redfan.log"))       # Output to a file in the script's execution directory
     ]
 )
 logger = setup_logger()
@@ -17,7 +18,7 @@ logger = setup_logger()
 # authentication setup
 login_account = 'admin'
 password = keyring.get_password('redfish', login_account)
-login_host = f'https://{keyring.get_password('redfish', 'host')}'
+login_host = f"https://{keyring.get_password('redfish', 'host')}"
 
 try:
     if not password:
