@@ -18,7 +18,8 @@ logger = setup_logger()
 # authentication setup
 login_account = 'admin'
 password = keyring.get_password('redfish', login_account)
-login_host = f"https://{keyring.get_password('redfish', 'host')}"
+login_host = keyring.get_password('redfish', 'host')
+login_url = f"https://{login_host}"
 
 try:
     if not password:
