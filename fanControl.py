@@ -8,12 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 # helpers
-def get_local_path(path):
-    """Get the local path of the current script."""
-    path = Path(__file__).parent.resolve() / path
-    return path
-
-
 def setup_logger():
     """Setup logger with a specific log level and format."""
     logger = logging.getLogger(__name__)
@@ -140,7 +134,8 @@ def evaluate_fan_mode(REDFISH_OBJ, config):
     try:
         new_mode = evaluate_gpu_temperature(
             config.get('sensor_profile').get('gpu_name'),
-            config.get('sensor_profile').get('sensor_path')
+            config.get('sensor_profile').get('sensor_package'),
+            config.get('sensor_profile').get('sensor_name')
         )
         if config.get('fan_profile'):
             logger.info(f"Setting Fan Mode based on Custom profile: {new_mode}")
