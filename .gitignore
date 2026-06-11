@@ -220,5 +220,6 @@ __marimo__/
 # custom
 .scratchpad*
 .example*
-config.json
 *.log
+config.json
+fan_profile.json

@@ -6,7 +6,13 @@ from gpuControl import *
 
 logger = logging.getLogger(__name__)
 
+
 # helpers
+def get_local_path(path):
+    """Get the local path of the current script."""
+    path = Path(__file__).parent.resolve() / path
+    return path
+
 
 def setup_logger():
     """Setup logger with a specific log level and format."""
@@ -30,9 +36,7 @@ def load_config(file_path: str) -> dict:
     if provided_path.is_absolute():
         final_path = provided_path
     else:
-        # __file__ is the current script's path. .parent gets its folder.
-        script_dir = Path(__file__).parent.resolve()
-        final_path = script_dir / provided_path
+        final_path = get_local_path(provided_path)
 
     logger.info(f"Looking for configuration file at: {final_path}")
     
@@ -100,7 +104,7 @@ def dump_fan_profile(REDFISH_OBJ, new_mode):
     try:
         fan_profile = get_fan_profile(REDFISH_OBJ)
         fan_profile['strMode'] = new_mode
-        with open('fan_profile.json', 'w') as f:
+        with open(get_local_path('fan_profile.json'), 'w') as f:
             json.dump(fan_profile, f)
             logger.info(f"Dumped fan profile with mode: {new_mode}")
     except Exception as e:

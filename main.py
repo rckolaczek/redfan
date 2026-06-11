@@ -4,13 +4,12 @@ import redfish
 from fanControl import *
 
 # logging
-log_dir = Path(__file__).parent.resolve()
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(),                        # Output to console
-        logging.FileHandler(log_dir / "redfan.log")     # Output to a file in the script's execution directory
+logging.StreamHandler(),                                        # Output to console
+        logging.FileHandler(get_local_path("redfan.log"))       # Output to a file in the script's execution directory
     ]
 )
 logger = setup_logger()
