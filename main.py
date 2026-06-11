@@ -3,14 +3,20 @@ import sys
 import keyring
 import redfish
 from fanControl import *
+from logging import handlers
 
 # logging
 logging.basicConfig(
-    level=logging.ERROR,
+    level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
     logging.StreamHandler(),                                # Output to console
-    logging.FileHandler(get_local_path("redfan.log"))       # Output to a file in the script's execution directory
+    handlers.RotatingFileHandler(
+            get_local_path("redfan.log"),
+            maxBytes=5000000,
+            backupCount=3,
+            encoding="utf-8"
+        )                                                   # Output to a rotating file in the script's execution directory
     ]
 )
 logger = setup_logger()

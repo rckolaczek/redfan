@@ -1,6 +1,6 @@
 # RedFan Project
 
-RedFan is a Python-based fan control script that uses the Redfish API to monitor and adjust fan speeds based on sensor data. It provides a simple interface to manage fan profiles and temperature thresholds based on predefined settings. The script uses the Redfish API to interact with the server, allowing for remote control of fan speeds and temperature monitoring.
+RedFan is a Python-based fan control script that uses the Redfish API to monitor and adjust fan speeds based on sensor data. It provides a simple interface to manage fan profiles and temperature thresholds based on predefined settings. The script uses the Redfish API to interact with the server, so your server **must** utilize the Redfish management software for this script to function correctly.
 
 The primary use-case is to allow you to fine tune the cooling of your server based on any available sensor, even your GPU.
 
