@@ -221,3 +221,4 @@ __marimo__/
 .scratchpad*
 .example*
 config.json
+*.log
