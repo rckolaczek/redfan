@@ -11,6 +11,16 @@ def get_sensors(gpu_id=None):
     try:
         if os.name == 'posix':
             result = json.loads(subprocess.run(['sensors', '-j'], capture_output=True, text=True).stdout, object_pairs_hook=parse_duplicates)
+            # Flatten and extract every sub-value safely
+            for root_key, contents in result:
+                print(f"Device: {root_key}")
+                for sub_key, sub_value in contents:
+                    # Check if the sub_value is nested (like the temp/energy dicts)
+                    if isinstance(sub_value, list):
+                        for metric_key, metric_val in sub_value:
+                            print(f"  [{sub_key}] {metric_key}: {metric_val}")
+                    else:
+                        print(f"  {sub_key}: {sub_value}")
         elif os.name == 'nt':
             result = {} # Placeholder response for Windows | tbd
             logger.info("Windows sensors not supported yet, evaluating anyway")
