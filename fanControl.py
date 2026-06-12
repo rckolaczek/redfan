@@ -110,10 +110,10 @@ class FanController:
 
     def dump_fan_profile(self, new_mode):
         try:
-            fan_profile_path = get_local_path('fan_profile.json')
             if not self.fan_profile:
                 self.get_fan_profile()
             self.fan_profile['strMode'] = new_mode
+            fan_profile_path = get_local_path('fan_profile.json')
             with open(get_local_path(fan_profile_path), 'w') as f:
                 json.dump(self.fan_profile, f)
                 logger.info(f"Dumped fan profile to {fan_profile_path} with mode: {new_mode}")
@@ -156,10 +156,10 @@ class FanController:
                 config.get('temp_profile').get('max')
             )
             if config.get('fan_profile'):
-                logger.info(f"Setting Fan Mode based on Custom profile: {new_mode}")
                 new_profile = config.get('fan_profile').get(new_mode)
                 old_profile = self.get_fan_profile().get('strMode',{})
                 if old_profile != new_profile:
+                    logger.info(f"Setting Fan Mode based on Custom profile: {new_profile}")
                     response = self.set_fan_profile(self.dump_fan_profile(new_profile))
                     return response
                 else:
@@ -221,16 +221,18 @@ class SensorController:
             if sensor_temp:
                 logger.info(f"Evaluated Device temperature for {sensor_name}: {sensor_temp}°C")
                 if sensor_temp >= min_threshold and sensor_temp < max_threshold:
-                    logger.info("Set fans to Half")
+                    logger.info("Set fan mode to: Half")
                     fan_mode = 'Half'
                 elif sensor_temp >= max_threshold:
-                    logger.info("Set fans to Full")
+                    logger.info("Set fan mode to: Full")
                     fan_mode = 'Full'
+                else:
+                    logger.info("Set fan mode to: Auto")
             else:
                 logger.warning(f"No temperature data found for Device sensor path: {device_name}.{sensor_package}.{sensor_name}")
-                logger.info("Set fans to Auto")
+                logger.info("Set fan mode to: Auto")
         except Exception as e:
             logger.error(f"Failed to evaluate Device temperature: {e}")
-            logger.info("Set fans to Auto")
+            logger.info("Set fan mode to: Auto")
         finally:
             return fan_mode
