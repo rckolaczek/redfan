@@ -1,7 +1,8 @@
 {
     "sensor_profile": {
         "device_name": "xe-pci-0300",
-        "sensor_path": "pkg"
+        "sensor_path": "pkg",
+        "sensor_name": "temp2_input"
     },
     "fan_profile": {
         "Auto": "Default",

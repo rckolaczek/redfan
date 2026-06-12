@@ -1,9 +1,9 @@
 # main.py
 import sys
 import keyring
-import redfish
 from fanControl import *
 from logging import handlers
+from redfishContext import RedfishContext
 
 # logging
 logging.basicConfig(
@@ -19,7 +19,7 @@ logging.basicConfig(
         )                                                   # Output to a rotating file in the script's execution directory
     ]
 )
-logger = setup_logger()
+logger = FanController.setup_logger()
 
 # authentication setup
 login_account = 'admin'
@@ -44,21 +44,14 @@ except Exception as e:
 def main():
     try:
         # custom configuration for fan profile and temperature sensor path in your environment
-        custom_config = load_config('config.json')
+        custom_config = FanController.load_config('config.json')
 
-        # authenticate to Redfish server 
-        REDFISH_OBJ = redfish.redfish_client(base_url=login_url, username=login_account,
-                        password=password, default_prefix='/redfish/v1/')
-        REDFISH_OBJ.login(auth="session")
-        logger.info("Successfully logged into Redfish server")
-
-        # evaluate Device temperatures | evaluate fan modes | dump and update fan profile | import new profile and/or set new mode
-        evaluate_fan_mode(REDFISH_OBJ, custom_config)
+        with RedfishContext(login_url, login_account, password) as REDFISH_OBJ:
+            # evaluate Device temperatures | evaluate fan modes | dump and update fan profile | import new profile and/or set new mode
+            redfan = FanController(REDFISH_OBJ)
+            redfan.evaluate_fan_mode(config=custom_config)
 
     except Exception as e:
         logger.error(f"Main execution failed: {e}")
-    finally:
-        REDFISH_OBJ.logout()
-
 if __name__ == "__main__":
     main()
