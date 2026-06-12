@@ -60,6 +60,7 @@ def load_config(file_path: str) -> dict:
 class FanController:
     def __init__(self, redfish_obj):
         self.redfish_obj = redfish_obj
+        self.fan_profile = None
 
     def get_odata_spec(self):
         try:
@@ -100,9 +101,9 @@ class FanController:
 
     def get_fan_profile(self):
         try:
-            response = self.redfish_obj.get("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", None).dict
+            self.fan_profile = self.redfish_obj.get("/redfish/v1/Chassis/Self/Thermal/FanprofileService/Fanprofile", None).dict
             logger.info("Successfully fetched fan profile")
-            return response
+            return self.fan_profile
         except Exception as e:
             logger.error(f"Failed to fetch fan profile: {e}")
             return {}
@@ -110,10 +111,11 @@ class FanController:
     def dump_fan_profile(self, new_mode):
         try:
             fan_profile_path = get_local_path('fan_profile.json')
-            fan_profile = self.get_fan_profile()
-            fan_profile['strMode'] = new_mode
+            if not self.fan_profile:
+                self.get_fan_profile()
+            self.fan_profile['strMode'] = new_mode
             with open(get_local_path(fan_profile_path), 'w') as f:
-                json.dump(fan_profile, f)
+                json.dump(self.fan_profile, f)
                 logger.info(f"Dumped fan profile to {fan_profile_path} with mode: {new_mode}")
                 return fan_profile_path
         except Exception as e:
@@ -194,11 +196,11 @@ class SensorController:
     def get_sensors(self):
         try:
             if os.name == 'posix':
-                result = json.loads(subprocess.run(['sensors', '-j'], capture_output=True, text=True).stdout, object_pairs_hook=self.combine_duplicate_keys)
+                sensors = json.loads(subprocess.run(['sensors', '-j'], capture_output=True, text=True).stdout, object_pairs_hook=self.combine_duplicate_keys)
             elif os.name == 'nt':
                 # Placeholder response for Windows | place a test file in the script root if you want to evaluate
                 with open(get_local_path("example.sensors.json")) as file:
-                    result = json.load(file, object_pairs_hook=self.combine_duplicate_keys)
+                    sensors = json.load(file, object_pairs_hook=self.combine_duplicate_keys)
                 logger.info("Windows sensors not supported yet, evaluating anyway with a test file")
             else:
                 logger.error("Unsupported operating system")
@@ -206,11 +208,11 @@ class SensorController:
             logger.info(f"Successfully fetched sensor data")
         except Exception as e:
             logger.error(f"Error fetching sensors: {e}")
-        return result
+        return sensors
 
     def evaluate_sensor_temperature(self, device_name, sensor_package, sensor_name, min_threshold=60, max_threshold=80, sensor_temp=None):
         try:
-            fan_profile = 'Auto'
+            fan_mode = 'Auto'
             sensors = self.get_sensors().get(device_name,{}).get(sensor_package,{})
             for i in sensors:
                 if sensor_name in i:
@@ -220,15 +222,15 @@ class SensorController:
                 logger.info(f"Evaluated Device temperature for {sensor_name}: {sensor_temp}°C")
                 if sensor_temp >= min_threshold and sensor_temp < max_threshold:
                     logger.info("Set fans to Half")
-                    fan_profile = 'Half'
+                    fan_mode = 'Half'
                 elif sensor_temp >= max_threshold:
                     logger.info("Set fans to Full")
-                    fan_profile = 'Full'
+                    fan_mode = 'Full'
             else:
-                logger.warning(f"No temperature data found for Device sensor path: {sensor_name}.{sensor_package}.{sensor_name}")
+                logger.warning(f"No temperature data found for Device sensor path: {device_name}.{sensor_package}.{sensor_name}")
                 logger.info("Set fans to Auto")
         except Exception as e:
             logger.error(f"Failed to evaluate Device temperature: {e}")
             logger.info("Set fans to Auto")
         finally:
-            return fan_profile
+            return fan_mode
