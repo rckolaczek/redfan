@@ -7,7 +7,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# helpers
+#region helpers
 @staticmethod
 def setup_logger():
     """Setup logger with a specific log level and format."""
@@ -56,7 +56,7 @@ def load_config(file_path: str) -> dict:
         logger.error(f"Invalid JSON syntax in config file: {error}")
         raise
 
-# FanController
+#region FanController
 class FanController:
     def __init__(self, redfish_obj):
         self.redfish_obj = redfish_obj
@@ -174,7 +174,7 @@ class FanController:
         except Exception as e:
             logger.error(f"Failed to evaluate fan mode: {e}")
 
-# SensorController
+#region SensorController
 class SensorController:
     @staticmethod
     def combine_duplicate_keys(pairs):
